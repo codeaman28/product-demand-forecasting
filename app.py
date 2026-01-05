@@ -1,11 +1,33 @@
 import streamlit as st
 import pandas as pd
-import joblib
+from sklearn.linear_model import LinearRegression
 
-st.write("Streamlit app started")  # debug line
+st.write("Streamlit app started")
 
-model = joblib.load("model/demand_model.pkl")
+# -----------------------------
+# TRAIN MODEL INSIDE APP
+# -----------------------------
+@st.cache_resource
+def train_model():
+    df = pd.read_csv("data/sales.csv")
 
+    df["date"] = pd.to_datetime(df["date"])
+    df["month"] = df["date"].dt.month
+    df["day"] = df["date"].dt.day
+
+    X = df[["store", "item", "month", "day"]]
+    y = df["sales"]
+
+    model = LinearRegression()
+    model.fit(X, y)
+
+    return model
+
+model = train_model()
+
+# -----------------------------
+# UI PART
+# -----------------------------
 st.title("Product Demand Forecasting System")
 
 store = st.number_input("Store ID", min_value=1)
